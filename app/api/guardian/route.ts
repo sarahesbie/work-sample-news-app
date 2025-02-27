@@ -28,23 +28,18 @@ export async function GET(req: Request) {
       },
     });
 
-    const articles = response.data.response.results.map((article: any) => ({
-      title: article.webTitle,
-      url: article.webUrl,
-      section: article.sectionName,
-      date: article.webPublicationDate,
-    }));
+    const { results, currentPage, pages: totalPages } = response.data.response;
 
-    return NextResponse.json({
-      articles: response.data.response.results.map((article: any) => ({
-        title: article.webTitle,
-        url: article.webUrl,
-        section: article.sectionName,
-        date: article.webPublicationDate,
-      })),
-      currentPage: response.data.response.currentPage,
-      totalPages: response.data.response.pages,
-    });
+    const articles = results.map(
+      ({ webTitle, webUrl, sectionName, webPublicationDate }: any) => ({
+        title: webTitle,
+        url: webUrl,
+        section: sectionName,
+        date: webPublicationDate,
+      })
+    );
+
+    return NextResponse.json({ articles, currentPage, totalPages });
   } catch (error: unknown) {
     const err = error as Error;
     console.error("Error fetching articles", err.message);
