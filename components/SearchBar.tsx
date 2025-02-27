@@ -23,7 +23,6 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
       placeholder="Search news..."
       value={input}
       onChange={(e) => setInput(e.target.value)}
-      className="border p-2 w-full"
     />
   );
 }
