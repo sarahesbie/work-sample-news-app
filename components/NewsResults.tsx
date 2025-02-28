@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Article } from "types/Article";
+import { Article, GroupedArticles } from "types/Article";
 
 interface NewsResultsProps {
   query: string;
@@ -14,7 +14,7 @@ export default function NewsResults({
   pinnedArticles,
   togglePin,
 }: NewsResultsProps) {
-  const [articles, setArticles] = useState<Article[]>([]);
+  const [groupedArticles, setGroupedArticles] = useState<GroupedArticles>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
 
@@ -27,7 +27,7 @@ export default function NewsResults({
       try {
         const res = await fetch(`/api/guardian?query=${query}`);
         const data = await res.json();
-        setArticles(data.articles);
+        setGroupedArticles(data.groupedArticles || {});
       } catch {
         setError(true);
       } finally {
@@ -43,20 +43,26 @@ export default function NewsResults({
 
   return (
     <div>
-      {articles.map((article) => {
-        const isPinned = pinnedArticles.some((a) => a.url === article.url);
-        return (
-          <div key={article.url}>
-            <a href={article.url} target="_blank" rel="noopener noreferrer">
-              {article.title}
-            </a>
-            <p>{new Date(article.date).toLocaleDateString()}</p>
-            <button onClick={() => togglePin(article)}>
-              {isPinned ? "Unpin" : "Pin"}
-            </button>
-          </div>
-        );
-      })}
+      {Object.entries(groupedArticles).map(([section, articles]) => (
+        <div key={section}>
+          <h2>{section}</h2>
+          {articles.map((article) => {
+            const isPinned = pinnedArticles.some((a) => a.url === article.url);
+
+            return (
+              <div key={article.url}>
+                <a href={article.url} target="_blank" rel="noopener noreferrer">
+                  {article.title}
+                </a>
+                <p>{new Date(article.date).toLocaleDateString()}</p>
+                <button onClick={() => togglePin(article)}>
+                  {isPinned ? "Unpin" : "Pin"}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      ))}
     </div>
   );
 }
