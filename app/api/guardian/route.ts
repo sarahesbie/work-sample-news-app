@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import axios from "axios";
+import { Article, GroupedArticles } from "types/Article";
 
 const GUARDIAN_API_URL = "https://content.guardianapis.com/search";
 const API_KEY = process.env.GUARDIAN_API_KEY;
@@ -39,7 +40,18 @@ export async function GET(req: Request) {
       })
     );
 
-    return NextResponse.json({ articles, currentPage, totalPages });
+    const groupedArticles = articles.reduce(
+      (acc: GroupedArticles, article: Article) => {
+        if (!acc[article.section]) {
+          acc[article.section] = [];
+        }
+        acc[article.section].push(article);
+        return acc;
+      },
+      {} as GroupedArticles
+    );
+
+    return NextResponse.json({ groupedArticles, currentPage, totalPages });
   } catch (error: unknown) {
     const err = error as Error;
     console.error("Error fetching articles", err.message);
